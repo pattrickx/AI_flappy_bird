@@ -4,7 +4,7 @@ from pygame.draw import rect
 import random
 
 class Pipe():
-    def __init__(self,screen,screen_size,min_hole_size=70,max_hole_size=140, section_size=50,pixel_step=1) -> None:
+    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=300, section_size=50,pixel_step=1) -> None:
         self.screen=screen
         self.section_size = section_size
         self.screen_size=screen_size
@@ -44,23 +44,31 @@ class Bird:
         self.max_up_time = 5
         self.up_time = 0
         self.up = False
+
+        self.velocit= 0.1
+        self.fall_time=0
     
     def UP(self):
         self.up =True
         self.up_time = 0
+        self.velocit= -2
+        self.fall_time=0
     def draw_bird(self):
         rect(self.screen, self.color, (self.position[0],self.position[1],self.section_size,self.section_size))
     
     def update_position(self):
-        if self.up and self.position[1]>0:
-            self.position[1]-=2
-            self.up_time +=1
-            if self.up_time>50:
-                self.up_time = 0
-                self.up = False
-        elif self.position[1]+self.section_size<self.screen_size[1]:
-            self.position[1]+=1
-        
+    #     if self.up and self.position[1]>0:
+    #         self.position[1]-=2
+    #         self.up_time +=1
+    #         if self.up_time>50:
+    #             self.up_time = 0
+    #             self.up = False
+    #     elif self.position[1]+self.section_size<self.screen_size[1]:
+        self.fall_time+=1
+        self.position[1] = self.position[1] +self.velocit*self.fall_time+(0.1*self.fall_time**2)/2
+        self.velocit = 0.1*self.fall_time-2
+        if not self.position[1]+self.section_size<self.screen_size[1]:
+            self.position[1] = self.screen_size[1]-self.section_size
 
 
 class flap_bird:
@@ -113,4 +121,4 @@ if __name__ == '__main__':
         game.game_step()
         game.draw_game()
 
-        time.sleep(0.002)
+        time.sleep(0.01)
