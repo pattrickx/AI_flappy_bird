@@ -89,7 +89,13 @@ class flap_bird:
         pass
 
     def colision(self):
-        pass
+        if self.bird.position[1]>=self.size[1]:
+            print("END Game by hit Ground")
+        elif self.pipe.position[0]<=self.bird.position[0]<=self.pipe.position[0]+self.pipe.section_size:
+            if self.bird.position[1]<=self.pipe.hole_center-(self.pipe.hole_size/2):
+                print("END GAME by hit pipe top")
+            elif self.bird.position[1]+self.bird.section_size>=self.pipe.hole_center+(self.pipe.hole_size/2):
+                print("END GAME by hit pipe botton")
 
     def user_action(self):
         for event in pygame.event.get():
@@ -106,6 +112,7 @@ class flap_bird:
         if self.start:
             self.bird.update_position()
             self.pipe.update_position()
+            self.colision()
 
     def draw_game(self):
         self.screen.fill(self.blackgrond_color)
@@ -122,4 +129,4 @@ if __name__ == '__main__':
         game.game_step()
         game.draw_game()
 
-        time.sleep(0.01)
+        time.sleep(0.005)
