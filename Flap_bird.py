@@ -4,7 +4,7 @@ from pygame.draw import rect
 import random
 
 class Pipe():
-    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=300, section_size=50,pixel_step=1) -> None:
+    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=200, section_size=50,pixel_step=2) -> None:
         self.screen=screen
         self.section_size = section_size
         self.screen_size=screen_size
@@ -25,8 +25,9 @@ class Pipe():
             self.position = self.init_position.copy()
             self.generate_pipe()
     def generate_pipe(self):
-        self.hole_size = random.randint(self.min_hole_size, self.max_hole_size)
-        self.hole_center = random.randint(self.hole_size, self.screen_size[0]-self.hole_size)
+        self.hole_size = random.randrange(self.min_hole_size, self.max_hole_size)
+        print(self.hole_size)
+        self.hole_center = random.randrange(self.hole_size, int(self.screen_size[0]-self.hole_size/2))
     def draw_pipe(self):
         rect(self.screen, (0,255,0), (self.position[0],0,self.section_size,self.hole_center-self.hole_size/2))
         rect(self.screen, (0,255,0), (self.position[0],self.hole_center+self.hole_size/2,self.section_size,self.screen_size[1]-(self.hole_center+self.hole_size/2)))
@@ -51,7 +52,7 @@ class Bird:
     def UP(self):
         self.up =True
         self.up_time = 0
-        self.velocit= -2
+        self.velocit= -0.4
         self.fall_time=0
     def draw_bird(self):
         rect(self.screen, self.color, (self.position[0],self.position[1],self.section_size,self.section_size))
@@ -63,10 +64,10 @@ class Bird:
     #         if self.up_time>50:
     #             self.up_time = 0
     #             self.up = False
-    #     elif self.position[1]+self.section_size<self.screen_size[1]:
-        self.fall_time+=1
-        self.position[1] = self.position[1] +self.velocit*self.fall_time+(0.1*self.fall_time**2)/2
-        self.velocit = 0.1*self.fall_time-2
+        if self.position[1]<self.screen_size[1]:
+            self.fall_time+=1
+            self.position[1] = self.position[1] +self.velocit*self.fall_time+(0.01*self.fall_time**2)/2
+            self.velocit = 0.01*self.fall_time-0.4
         if not self.position[1]+self.section_size<self.screen_size[1]:
             self.position[1] = self.screen_size[1]-self.section_size
 
