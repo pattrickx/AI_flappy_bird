@@ -89,7 +89,7 @@ class flap_bird:
         pass
 
     def colision(self):
-        if self.bird.position[1]>=self.size[1]:
+        if self.bird.position[1]+self.bird.section_size>=self.size[1]:
             print("END Game by hit Ground")
         elif self.pipe.position[0]<=self.bird.position[0]<=self.pipe.position[0]+self.pipe.section_size:
             if self.bird.position[1]<=self.pipe.hole_center-(self.pipe.hole_size/2):
