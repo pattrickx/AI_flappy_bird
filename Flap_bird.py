@@ -1,6 +1,35 @@
 import sys, pygame
 import time
 from pygame.draw import rect
+import random
+
+class Pipe():
+    def __init__(self,screen,screen_size,min_hole_size=70,max_hole_size=140, section_size=50,pixel_step=1) -> None:
+        self.screen=screen
+        self.section_size = section_size
+        self.screen_size=screen_size
+        self.min_hole_size = min_hole_size
+        self.max_hole_size = max_hole_size
+        self.hole_size=self.min_hole_size
+        self.init_position = [self.screen_size[0],0]
+        self.position = self.init_position.copy()
+        self.pixel_step = pixel_step
+        self.hole_center=self.screen_size[0]/2
+        self.generate_pipe()
+
+
+    def update_position(self):
+        if self.position[0]>-self.section_size:
+            self.position[0] -= self.pixel_step
+        else:
+            self.position = self.init_position.copy()
+            self.generate_pipe()
+    def generate_pipe(self):
+        self.hole_size = random.randint(self.min_hole_size, self.max_hole_size)
+        self.hole_center = random.randint(self.hole_size, self.screen_size[0]-self.hole_size)
+    def draw_pipe(self):
+        rect(self.screen, (0,255,0), (self.position[0],0,self.section_size,self.hole_center-self.hole_size/2))
+        rect(self.screen, (0,255,0), (self.position[0],self.hole_center+self.hole_size/2,self.section_size,self.screen_size[1]-(self.hole_center+self.hole_size/2)))
 
 
 class Bird:
@@ -41,6 +70,7 @@ class flap_bird:
         self.size = self.width, self.height =  width,height
         self.screen = pygame.display.set_mode(self.size)
         self.bird = Bird(self.screen,self.size)
+        self.pipe = Pipe(self.screen,self.size)
         self.score = 0
         self.blackgrond_color = (0,0,0)
         self.start=False
@@ -66,10 +96,12 @@ class flap_bird:
         self.user_action()
         if self.start:
             self.bird.update_position()
+            self.pipe.update_position()
 
     def draw_game(self):
         self.screen.fill(self.blackgrond_color)
         self.bird.draw_bird()
+        self.pipe.draw_pipe()
         pygame.display.update()
         pygame.display.flip()
         
