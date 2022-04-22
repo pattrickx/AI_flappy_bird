@@ -5,7 +5,7 @@ from torch import optim
 import torch.nn.functional as F
 
 class QNet(nn.Module):
-    def __init__(self,input_size=2, output_size=1, hidden_size=20):
+    def __init__(self,input_size=2, output_size=2, hidden_size=20):
         super().__init__()
 
         self.fc = nn.Sequential(

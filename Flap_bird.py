@@ -4,7 +4,7 @@ from pygame.draw import rect
 import random
 
 class Pipe():
-    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=200, section_size=50,pixel_step=2) -> None:
+    def __init__(self,screen,screen_size,min_hole_size=70,max_hole_size=150, section_size=60,pixel_step=1) -> None:
         self.screen=screen
         self.section_size = section_size
         self.screen_size=screen_size
@@ -25,6 +25,7 @@ class Pipe():
             self.position = self.init_position.copy()
             self.generate_pipe()
     def generate_pipe(self):
+        self.position = self.init_position.copy()
         self.hole_size = random.randrange(self.min_hole_size, self.max_hole_size)
         print(self.hole_size)
         self.hole_center = random.randrange(self.hole_size, int(self.screen_size[0]-self.hole_size/2))
@@ -34,25 +35,34 @@ class Pipe():
 
 
 class Bird:
-    def __init__(self,screen, screen_size,section_size=20, position=[240,300],direction=[0,1],color=(0,0,255)) -> None:
+    def __init__(self,screen, screen_size,section_size=20, position=[230,330],direction=[0,1],color=(0,0,255)) -> None:
         self.screen = screen
         self.screen_size=screen_size
         self.section_size = section_size
-        self.position = position
+        self.position_base = position
+        self.position = self.position_base.copy()
         self.direction= direction
         self.color=color
         self.points = 0
         self.max_up_time = 5
         self.up_time = 0
         self.up = False
-
+        self.up_velocit = -0.5
         self.velocit= 0.1
         self.fall_time=0
+        self.gravity_ac=0.01
+
+    def reset(self):
+        self.up_time = 0
+        self.up = False
+        self.velocit= 0.1
+        self.fall_time=0
+        self.position = self.position_base.copy()
     
     def UP(self):
         self.up =True
         self.up_time = 0
-        self.velocit= -0.4
+        self.velocit= self.up_velocit
         self.fall_time=0
     def draw_bird(self):
         rect(self.screen, self.color, (self.position[0],self.position[1],self.section_size,self.section_size))
@@ -65,11 +75,15 @@ class Bird:
     #             self.up_time = 0
     #             self.up = False
         if self.position[1]<self.screen_size[1]:
+            
             self.fall_time+=1
-            self.position[1] = self.position[1] +self.velocit*self.fall_time+(0.01*self.fall_time**2)/2
-            self.velocit = 0.01*self.fall_time-0.4
-        if not self.position[1]+self.section_size<self.screen_size[1]:
+            self.position[1] = self.position[1] +self.velocit*self.fall_time+(self.gravity_ac*self.fall_time**2)/2
+            if self.velocit< 0.03:
+                self.velocit = self.gravity_ac*self.fall_time+self.up_velocit
+            
+        if self.position[1]>=self.screen_size[1]-self.section_size:
             self.position[1] = self.screen_size[1]-self.section_size
+            self.velocit = 0
 
 
 class flap_bird:
@@ -81,21 +95,38 @@ class flap_bird:
         self.bird = Bird(self.screen,self.size)
         self.pipe = Pipe(self.screen,self.size)
         self.score = 0
+        self.points = 0
         self.blackgrond_color = (0,0,0)
         self.start=False
 
 
     def reset(self):
+        self.bird.reset()
+        self.pipe.generate_pipe()
+        self.score = 0
+        self.points = 0
+        self.start=False
         pass
 
     def colision(self):
         if self.bird.position[1]+self.bird.section_size>=self.size[1]:
             print("END Game by hit Ground")
-        elif self.pipe.position[0]<=self.bird.position[0]<=self.pipe.position[0]+self.pipe.section_size:
+            return True
+        elif self.pipe.position[0]<=self.bird.position[0]+self.bird.section_size<=self.pipe.position[0]+self.pipe.section_size:
             if self.bird.position[1]<=self.pipe.hole_center-(self.pipe.hole_size/2):
                 print("END GAME by hit pipe top")
+                return True
             elif self.bird.position[1]+self.bird.section_size>=self.pipe.hole_center+(self.pipe.hole_size/2):
                 print("END GAME by hit pipe botton")
+                return True
+        return False
+    def get_points(self):
+        if self.bird.position[0]> self.pipe.position[0]+self.pipe.section_size:
+            self.points+=1
+            self.score += self.score*(self.points)**2
+            self.pipe.generate_pipe()
+            return True
+        return False
 
     def user_action(self):
         for event in pygame.event.get():
@@ -114,19 +145,46 @@ class flap_bird:
             self.pipe.update_position()
             self.colision()
 
-    def draw_game(self):
+    def game_draw(self):
         self.screen.fill(self.blackgrond_color)
         self.bird.draw_bird()
         self.pipe.draw_pipe()
         pygame.display.update()
         pygame.display.flip()
+
+
+    def ai_action(self,move):
+        if not self.start:
+            self.start = True
+        if move[1]==1:
+            self.bird.UP()
+
+    def game_step_ai(self,move):
+
+        reward=1
+        self.ai_action(move)
+        if self.start:
+            self.bird.update_position()
+            self.pipe.update_position()
+            if self.colision():
+                return -10, True, self.score, self.points
+            self.score+=1
+            if self.get_points():
+                reward = 10
+
+        return reward, False, self.score, self.points
         
+
+    def inputs_AI(self):
+
+        return[self.pipe.hole_center - self.bird.position[1],(self.pipe.position[0]+self.pipe.section_size)-self.bird.position[0]]
+
 
 
 if __name__ == '__main__':
     game = flap_bird()
     while True:
         game.game_step()
-        game.draw_game()
+        game.game_draw()
 
         time.sleep(0.005)
