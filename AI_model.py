@@ -11,9 +11,9 @@ class QNet(nn.Module):
         self.fc = nn.Sequential(
 
             nn.Linear(in_features=input_size,out_features=hidden_size),
-            nn.Tanh(),
+            nn.Sigmoid(),
             nn.Linear(in_features=hidden_size,out_features=hidden_size),
-            nn.ReLU(),
+            nn.Sigmoid(),
             nn.Linear(in_features=hidden_size,out_features=output_size),
             )
         

@@ -18,7 +18,7 @@ class ai_agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9 #discont rate
         self.memory = deque(maxlen=MAX_MEMORY) # pop left if memory take biger them MAX_MEMORY
-        self.model = QNet(2,2,10)
+        self.model = QNet(2,2,2)
         if state_dict:
             self.model.load_state_dict(torch.load(state_dict))
         self.trainer = QTrainer(self.model)
@@ -84,6 +84,7 @@ def train():
     total_score = 0
     record = 0
     agent = ai_agent()
+    # agent = ai_agent("QNet_model.pth")
     game = flap_bird()
     while True:
         
@@ -115,7 +116,7 @@ def train():
             plot_mean_scores.append(mean_score)
             plot_caught_points.append(caught_points)
             plot(plot_scores,plot_mean_scores,plot_caught_points)
-        # time.sleep(0.5)
+        # time.sleep(0.005)
 
 
 
