@@ -58,7 +58,7 @@ class Bird:
         self.max_up_time = 5
         self.up_time = 0
         self.up = False
-        self.up_velocit = -0.5
+        self.up_velocit = -0.4
         self.velocit= 0.1
         self.fall_time=0
         self.gravity_ac=0.01
@@ -115,6 +115,7 @@ class flap_bird:
         self.b_image = pygame.image.load("assets/base.png").convert_alpha()
         self.score = 0
         self.points = 0
+        self.distance =0 
         self.blackgrond_color = (0,0,0)
         self.start=False
         self.scroll_base=0
@@ -126,6 +127,7 @@ class flap_bird:
         self.pipe.generate_pipe()
         self.score = 0
         self.points = 0
+        self.distance = 0 
         self.start=False
         pass
 
@@ -144,7 +146,7 @@ class flap_bird:
     def get_points(self):
         if self.bird.position[0]> self.pipe.position[0]+self.pipe.section_size:
             self.points+=1
-            self.score += self.score*(self.points) if self.score else 1
+            self.score += self.distance
             self.pipe.generate_pipe()
             return True
         return False
@@ -201,7 +203,7 @@ class flap_bird:
     def game_step_ai(self,move):
 
         # reward=1/abs(self.pipe.hole_center - self.bird.position[1]) if abs(self.pipe.hole_center - self.bird.position[1])  >1 else 1
-        reward=0
+        reward=-5
         self.ai_action(move)
         if self.start:
             self.bird.update_position()
@@ -209,9 +211,12 @@ class flap_bird:
             if self.colision():
                 return -10, True, self.score, self.points
             # self.score+=1/abs(self.pipe.hole_center - self.bird.position[1]) if abs(self.pipe.hole_center - self.bird.position[1]) >1 else 1
-            self.score+=0
+            if self.pipe.hole_center-self.pipe.hole_size/2<self.bird.position[1]<self.pipe.hole_center+self.pipe.hole_size/2:
+                self.score+=self.distance
+                reward=5
             if self.get_points():
                 reward = 10
+            self.distance +=1
 
         return reward, False, self.score, self.points
         

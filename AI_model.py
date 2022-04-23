@@ -8,17 +8,24 @@ class QNet(nn.Module):
     def __init__(self,input_size=2, output_size=2, hidden_size=20):
         super().__init__()
 
-        self.fc = nn.Sequential(
+        self.input = nn.Sequential(
 
             nn.Linear(in_features=input_size,out_features=hidden_size),
-            nn.Sigmoid(),
+            nn.ReLU(),
             nn.Linear(in_features=hidden_size,out_features=hidden_size),
-            nn.Sigmoid(),
+            nn.ReLU()
+            )
+
+        self.output = nn.Sequential(
+
+            nn.Linear(in_features=hidden_size,out_features=hidden_size),
+            nn.ReLU(),
             nn.Linear(in_features=hidden_size,out_features=output_size),
             )
         
     def forward(self, X):
-        Y = self.fc(X)
+        X = self.input(X)
+        Y = self.output(X)
         return Y
     
     def save_model(self,file_name="QNet_model.pth"):

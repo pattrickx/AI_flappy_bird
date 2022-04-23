@@ -54,7 +54,7 @@ class ai_agent:
             move = random.uniform(0, 1)
             # print(move)
             final_move =[1,0]
-            if move>0.97:
+            if move>0.98:
                 final_move =[0,1] 
             # print(f"random {move} {final_move}")
         else:
@@ -83,15 +83,16 @@ def train():
     plot_mean_scores = []
     total_score = 0
     record = 0
-    agent = ai_agent()
-    # agent = ai_agent("QNet_model.pth")
+    # agent = ai_agent()
+    # agent = ai_agent("best.pth")
+    agent = ai_agent("QNet_model.pth")
     game = flap_bird()
     while True:
         
         state_old = game.inputs_AI()
 
         final_move = agent.get_action(state_old)
-        game.game_draw()
+        # game.game_draw()
         reward, done, score,caught_points = game.game_step_ai(final_move)
         state_new = game.inputs_AI()
 
