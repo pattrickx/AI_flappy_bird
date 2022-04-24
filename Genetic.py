@@ -10,7 +10,7 @@ class specimen:
     def __init__(self,screen,screen_size) -> None:
         self.net = QNet(input_size=2, output_size=2, hidden_size=2)
         self.points = 0
-        self.bird = Bird(screen,screen_size)
+        self.bird = Bird(screen,screen_size,alpha=100)
         self.is_alive = True
     
     def get_action(self,state):
@@ -86,9 +86,6 @@ class Genetic:
 
     def generate_new_population(self):
         self.population.sort(key = lambda s: s.points, reverse=True)
-        if self.record<self.population[0].points:
-            self.record = self.population[0].points
-            self.population[0].net.save_model()
         self.crossover_population()
         self.mutate_population()
 
@@ -98,48 +95,47 @@ def train():
     plot_scores=[]
     plot_mean_scores = []
     total_score = 0
-    # agent = ai_agent()
-    # agent = ai_agent("best.pth")
     game = flap_bird()
     genetic = Genetic(game.screen,100)
 
     genetic.generate_population()
-    save_last = False
     while True:
         state = game.inputs_AI()
         game.game_draw_genetic()
         lives = 0
         # print(len(genetic.population))
         best_score =0
+        best_individual=None
         for individual in  genetic.population:
             if individual.is_alive:
                 lives+=1
                 action = individual.get_action(state)
                 game.bird = individual.bird
-                reward, done, score,caught_points = game.game_step_ai(action)
+                reward, done, _, _ = game.game_step_ai(action)
                 individual.points += reward
                 if done:
                     individual.is_alive=False
-                else: 
+                else:
                     game.bird.draw_bird()
+            if genetic.record< individual.bird.pipes_done:
+                genetic.record = individual.bird.pipes_done
+                individual.net.save_model("last_alive.pth")
             if best_score<individual.points:
                 best_score=individual.points
+                if best_individual:
+                    best_individual.bird.update_alpha(100)
+                best_individual = individual
+                best_individual.bird.update_alpha(255)
         game.pipe.update_position()
         game.game_update_screen()
-        if lives == 1 and not save_last:
-            for individual in genetic.population:
-                if individual.is_alive:
-                    individual.net.save_model("last_alive.pth")
-            save_last = True
         if lives == 0:
-            save_last = False
             genetic.n_games+=1
             game.reset()
             genetic.evaluate_population()
             epoch_score = genetic.population_fitness/genetic.population_size
             genetic.generate_new_population()
 
-            best_points.append(best_score)
+            best_points.append(genetic.record)
             plot_scores.append(epoch_score)
             total_score += epoch_score
             mean_score = total_score/ genetic.n_games

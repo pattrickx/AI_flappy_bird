@@ -4,7 +4,7 @@ import torch
 import time
 
 net = QNet(input_size=2, output_size=2, hidden_size=2)
-net.load_state_dict(torch.load("last_alive.pth"))
+net.load_state_dict(torch.load("best_with_genetcs.pth"))
 net.eval()
 game = flap_bird()
 def get_action(net,state):

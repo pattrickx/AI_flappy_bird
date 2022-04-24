@@ -42,19 +42,22 @@ class Pipe():
 
 
 class Bird:
-    def __init__(self,screen, screen_size, position=[280,280],direction=[0,1],color=(0,0,255)) -> None:
+    def __init__(self,screen, screen_size, position=[280,280],direction=[0,1],color=(0,0,255),alpha=255) -> None:
         self.screen = screen
         self.screen_size=screen_size
         self.images = [pygame.image.load("assets/yellowbird-downflap.png").convert_alpha(),
                         pygame.image.load("assets/yellowbird-midflap.png").convert_alpha(),
                         pygame.image.load("assets/yellowbird-upflap.png").convert_alpha()]
+        self.images[0].set_alpha(alpha)
+        self.images[1].set_alpha(alpha)
+        self.images[2].set_alpha(alpha)
         self.section_size_w = self.images[0].get_width()
         self.section_size_h = self.images[0].get_height()
         self.position_base = position
         self.position = self.position_base.copy()
         self.direction= direction
         self.color=color
-        self.points = 0
+        self.pipes_done = 0
         self.max_up_time = 5
         self.up_time = 0
         self.up = False
@@ -63,13 +66,17 @@ class Bird:
         self.fall_time=0
         self.gravity_ac=0.01
         self.frame = 0
-
+    def update_alpha(self,alpha):
+        self.images[0].set_alpha(alpha)
+        self.images[1].set_alpha(alpha)
+        self.images[2].set_alpha(alpha)
     def reset(self):
         self.up_time = 0
         self.up = False
         self.velocit= 0.1
         self.fall_time=0
         self.position = self.position_base.copy()
+        self.pipes_done = 0
     
     def UP(self):
         self.up =True
@@ -120,12 +127,11 @@ class flap_bird:
         self.start=False
         self.scroll_base=0
         self.scroll_bg=0
-        self.pipes_done = 0
+        
         
 
     def reset(self):
         self.bird.reset()
-        self.pipes_done = 0
         self.pipe.generate_pipe()
         self.score = 0
         self.points = 0
@@ -147,11 +153,7 @@ class flap_bird:
         return False
     def get_points(self):
         if self.bird.position[0]==self.pipe.position[0]+self.pipe.section_size:
-            self.points+=1
-            self.score += self.distance
-            self.bird.points += self.distance
-            self.pipes_done +=1
-            # self.pipe.generate_pipe()
+            self.bird.pipes_done += 1
             return True
         return False
 
@@ -170,7 +172,10 @@ class flap_bird:
         if self.start:
             self.bird.update_position()
             self.pipe.update_position()
-            self.colision()
+            self.get_points()
+            if self.colision():
+                self.reset()
+            
     def draw_background(self):
         self.scroll_base+=1
         self.scroll_bg+=0.2
@@ -183,22 +188,14 @@ class flap_bird:
         for i in range(0,tiles):
             self.screen.blit(self.bg_image,((i*self.bg_image.get_width())-self.scroll_bg,0))
             self.screen.blit(self.b_image,((i*self.b_image.get_width())-self.scroll_base,self.bg_image.get_height()))
-    def game_draw(self):
-        self.screen.fill(self.blackgrond_color)
-        self.draw_background()
-        self.bird.draw_bird()
-        self.pipe.draw_pipe()
-        pygame.display.update()
-        pygame.display.flip()
     def game_draw_genetic(self):
         self.draw_background()
         self.pipe.draw_pipe()
         
     def game_update_screen(self):
-        # self.pipe.update_position()
         self.distance +=1
         my_font = pygame.font.SysFont('Comic Sans MS', 30)
-        text_surface = my_font.render(f"Pipes: {self.pipes_done}", False, (255, 255, 255))
+        text_surface = my_font.render(f"Pipes: {self.bird.pipes_done}", False, (255, 255, 255))
         self.screen.blit(text_surface, (10,10))
         pygame.display.update()
         pygame.display.flip()
@@ -207,6 +204,9 @@ class flap_bird:
         self.draw_background()
         self.bird.draw_bird()
         self.pipe.draw_pipe()
+        my_font = pygame.font.SysFont('Comic Sans MS', 30)
+        text_surface = my_font.render(f"Pipes: {self.bird.pipes_done}", False, (255, 255, 255))
+        self.screen.blit(text_surface, (10,10))
         pygame.display.update()
         pygame.display.flip()
 
@@ -218,28 +218,25 @@ class flap_bird:
 
     def game_step_ai(self,move):
 
-        # reward=1/abs(self.pipe.hole_center - self.bird.position[1]) if abs(self.pipe.hole_center - self.bird.position[1])  >1 else 1
-        reward=1
+        reward=0
         self.ai_action(move)
         if self.start:
             self.bird.update_position()
             if self.colision():
-                return -10, True, self.score, self.points
-            # self.score+=1/abs(self.pipe.hole_center - self.bird.position[1]) if abs(self.pipe.hole_center - self.bird.position[1]) >1 else 1
+                return -10, True, self.score, self.bird.pipes_done
             if self.pipe.hole_center-self.pipe.hole_size/2<self.bird.position[1]<self.pipe.hole_center+self.pipe.hole_size/2:
-                self.score+=self.distance
-                self.bird.points+=self.distance
+                self.score+=5
                 reward=5
             if self.get_points():
+                self.score+=10
                 reward = 10
             
 
-        return reward, False, self.score, self.points
+        return reward, False, self.score, self.bird.pipes_done
         
 
     def inputs_AI(self):
-        # print([self.pipe.hole_center - self.bird.position[1],(self.pipe.position[0]+self.pipe.section_size)-self.bird.position[0]])
-
+        
         return[self.pipe.hole_center - self.bird.position[1],(self.pipe.position[0]+self.pipe.section_size)-self.bird.position[0]]
 
 
@@ -250,4 +247,4 @@ if __name__ == '__main__':
         game.game_step()
         game.game_draw_player()
 
-        time.sleep(0.005)
+        time.sleep(0.004)
