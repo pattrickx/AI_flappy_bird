@@ -24,7 +24,7 @@ class specimen:
 
 
 class Genetic:
-    def __init__(self,screen,population_size=1000) -> None:
+    def __init__(self,screen,population_size=100) -> None:
         self.screen = screen
         self.screen_size = self.width, self.height =  600,600
         self.population_size = population_size
@@ -32,7 +32,7 @@ class Genetic:
         self.population_fitness=0
         self.elitism_count = 5
         self.crossover_rate = 0.97
-        self.mutation_rate = 0.01
+        self.mutation_rate = 0.02
         self.n_games=0
         self.record = 0
         
@@ -94,7 +94,7 @@ class Genetic:
 
 
 def train():
-    plot_caught_points=[]
+    best_points=[]
     plot_scores=[]
     plot_mean_scores = []
     total_score = 0
@@ -110,6 +110,7 @@ def train():
         game.game_draw_genetic()
         lives = 0
         # print(len(genetic.population))
+        best_score =0
         for individual in  genetic.population:
             if individual.is_alive:
                 lives+=1
@@ -121,6 +122,8 @@ def train():
                     individual.is_alive=False
                 else: 
                     game.bird.draw_bird()
+            if best_score<individual.points:
+                best_score=individual.points
         game.pipe.update_position()
         game.game_update_screen()
         if lives == 1 and not save_last:
@@ -136,12 +139,12 @@ def train():
             epoch_score = genetic.population_fitness/genetic.population_size
             genetic.generate_new_population()
 
-            
+            best_points.append(best_score)
             plot_scores.append(epoch_score)
             total_score += epoch_score
             mean_score = total_score/ genetic.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores,plot_mean_scores)
+            plot(plot_scores,plot_mean_scores,best_points)
         # time.sleep(0.005)
 
 
