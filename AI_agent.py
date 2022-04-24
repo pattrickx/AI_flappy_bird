@@ -54,7 +54,7 @@ class ai_agent:
             move = random.uniform(0, 1)
             # print(move)
             final_move =[1,0]
-            if move>0.98:
+            if move>0.95:
                 final_move =[0,1] 
             # print(f"random {move} {final_move}")
         else:
@@ -69,6 +69,7 @@ class ai_agent:
         return final_move
     
     def get_play_action(self,state):
+        self.model.eval()
         final_move = [0,0]
         state0 = torch.tensor(state,dtype= torch.float)
         prediction = self.model(state0)
@@ -83,17 +84,20 @@ def train():
     plot_mean_scores = []
     total_score = 0
     record = 0
-    # agent = ai_agent()
-    # agent = ai_agent("best.pth")
-    agent = ai_agent("QNet_model.pth")
     game = flap_bird()
+    agent = ai_agent()
+    
     while True:
-        
+        game.game_draw_genetic()
         state_old = game.inputs_AI()
 
         final_move = agent.get_action(state_old)
-        # game.game_draw()
+        
+
         reward, done, score,caught_points = game.game_step_ai(final_move)
+        game.bird.draw_bird()
+        game.pipe.update_position()
+        game.game_update_screen()
         state_new = game.inputs_AI()
 
         agent.train_short_memory(state_old,final_move,reward,state_new,done)
