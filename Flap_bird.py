@@ -6,7 +6,7 @@ from pygame.draw import rect
 import random
 
 class Pipe():
-    def __init__(self,screen,screen_size,min_hole_size=100,max_hole_size=200,pixel_step=1) -> None:
+    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=150,pixel_step=1) -> None:
         self.screen=screen
         self.screen_size=screen_size
         self.min_hole_size = min_hole_size
@@ -120,10 +120,12 @@ class flap_bird:
         self.start=False
         self.scroll_base=0
         self.scroll_bg=0
+        self.pipes_done = 0
         
 
     def reset(self):
         self.bird.reset()
+        self.pipes_done = 0
         self.pipe.generate_pipe()
         self.score = 0
         self.points = 0
@@ -148,6 +150,7 @@ class flap_bird:
             self.points+=1
             self.score += self.distance
             self.bird.points += self.distance
+            self.pipes_done +=1
             # self.pipe.generate_pipe()
             return True
         return False
@@ -194,6 +197,9 @@ class flap_bird:
     def game_update_screen(self):
         # self.pipe.update_position()
         self.distance +=1
+        my_font = pygame.font.SysFont('Comic Sans MS', 30)
+        text_surface = my_font.render(f"Pipes: {self.pipes_done}", False, (255, 255, 255))
+        self.screen.blit(text_surface, (10,10))
         pygame.display.update()
         pygame.display.flip()
 

@@ -16,14 +16,15 @@ def get_action(net,state):
     final_move[move] = 1 
     return final_move
 while True:
-    game.game_draw()
+    game.game_draw_genetic()
     state = game.inputs_AI()
     final_move = get_action(net,state)
     
     
     _ , done, _, _ = game.game_step_ai(final_move)
+    game.bird.draw_bird()
     game.pipe.update_position()
     game.game_update_screen()
     if done: 
         game.reset()
-    time.sleep(0.001)
+    # time.sleep(0.001)
