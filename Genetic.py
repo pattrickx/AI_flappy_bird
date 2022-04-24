@@ -76,7 +76,7 @@ class Genetic:
 
     def mutate_population(self):
         random_population = self.generate_population()
-        for indivuduo,random_individuo in zip(self.population,random_population):
+        for indivuduo,random_individuo in zip(self.population[self.elitism_count-1:],random_population[self.elitism_count-1:]):
             if self.mutation_rate>random():
                 if random()>0.5:
                     indivuduo.net.input = random_individuo.net.input
