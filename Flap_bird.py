@@ -31,7 +31,7 @@ class Pipe():
     def generate_pipe(self):
         self.position = self.init_position.copy()
         self.hole_size = random.randrange(self.min_hole_size, self.max_hole_size)
-        print(self.hole_size)
+        # print(self.hole_size)
         self.hole_center = random.randrange(230, int(self.screen_size[0]-230))
     def draw_pipe(self):
         self.screen.blit(self.img_up_pipe,(self.position[0],(self.hole_center-self.hole_size/2)-self.img_up_pipe.get_height()))
@@ -133,21 +133,22 @@ class flap_bird:
 
     def colision(self):
         if self.bird.position[1]+self.bird.section_size_h>=self.size[1]:
-            print("END Game by hit Ground")
+            # print("END Game by hit Ground")
             return True
         elif self.pipe.position[0]<=self.bird.position[0]+self.bird.section_size_w<=self.pipe.position[0]+self.pipe.section_size:
             if self.bird.position[1]<=self.pipe.hole_center-(self.pipe.hole_size/2):
-                print("END GAME by hit pipe top")
+                # print("END GAME by hit pipe top")
                 return True
             elif self.bird.position[1]+self.bird.section_size_h>=self.pipe.hole_center+(self.pipe.hole_size/2):
-                print("END GAME by hit pipe botton")
+                # print("END GAME by hit pipe botton")
                 return True
         return False
     def get_points(self):
-        if self.bird.position[0]> self.pipe.position[0]+self.pipe.section_size:
+        if self.bird.position[0]==self.pipe.position[0]+self.pipe.section_size:
             self.points+=1
             self.score += self.distance
-            self.pipe.generate_pipe()
+            self.bird.points += self.distance
+            # self.pipe.generate_pipe()
             return True
         return False
 
@@ -186,6 +187,15 @@ class flap_bird:
         self.pipe.draw_pipe()
         pygame.display.update()
         pygame.display.flip()
+    def game_draw_genetic(self):
+        self.draw_background()
+        self.pipe.draw_pipe()
+        
+    def game_update_screen(self):
+        # self.pipe.update_position()
+        self.distance +=1
+        pygame.display.update()
+        pygame.display.flip()
 
     def game_draw_player(self):
         self.draw_background()
@@ -203,20 +213,20 @@ class flap_bird:
     def game_step_ai(self,move):
 
         # reward=1/abs(self.pipe.hole_center - self.bird.position[1]) if abs(self.pipe.hole_center - self.bird.position[1])  >1 else 1
-        reward=-5
+        reward=1
         self.ai_action(move)
         if self.start:
             self.bird.update_position()
-            self.pipe.update_position()
             if self.colision():
                 return -10, True, self.score, self.points
             # self.score+=1/abs(self.pipe.hole_center - self.bird.position[1]) if abs(self.pipe.hole_center - self.bird.position[1]) >1 else 1
             if self.pipe.hole_center-self.pipe.hole_size/2<self.bird.position[1]<self.pipe.hole_center+self.pipe.hole_size/2:
                 self.score+=self.distance
+                self.bird.points+=self.distance
                 reward=5
             if self.get_points():
                 reward = 10
-            self.distance +=1
+            
 
         return reward, False, self.score, self.points
         
