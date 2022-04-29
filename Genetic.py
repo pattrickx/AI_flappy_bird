@@ -135,7 +135,7 @@ def train():
             for individual in  genetic.population:
                 individual.is_alive=True
             game.reset()
-        if lives == 0 and train_games == 3:
+        if lives == 0 and train_games == 2:
             train_games = 0
             genetic.n_games+=1
             game.reset()
