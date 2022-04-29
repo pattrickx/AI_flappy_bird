@@ -6,7 +6,7 @@ from pygame.draw import rect
 import random
 
 class Pipe():
-    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=150,pixel_step=1) -> None:
+    def __init__(self,screen,screen_size,min_hole_size=90,max_hole_size=150,pixel_step=5) -> None:
         self.screen=screen
         self.screen_size=screen_size
         self.min_hole_size = min_hole_size
@@ -19,6 +19,7 @@ class Pipe():
         self.img_up_pipe = pygame.image.load("assets/pipe-green_up.png").convert_alpha()
         self.img_bottom_pipe = pygame.image.load("assets/pipe-green.png").convert_alpha()
         self.section_size = self.img_up_pipe.get_width()
+        self.get = False
         self.generate_pipe()
 
 
@@ -33,6 +34,7 @@ class Pipe():
         self.hole_size = random.randrange(self.min_hole_size, self.max_hole_size)
         # print(self.hole_size)
         self.hole_center = random.randrange(230, int(self.screen_size[0]-230))
+        self.get = False
     def draw_pipe(self):
         self.screen.blit(self.img_up_pipe,(self.position[0],(self.hole_center-self.hole_size/2)-self.img_up_pipe.get_height()))
         self.screen.blit(self.img_bottom_pipe,(self.position[0],self.hole_center+self.hole_size/2))
@@ -61,8 +63,8 @@ class Bird:
         self.max_up_time = 5
         self.up_time = 0
         self.up = False
-        self.up_velocit = -0.4
-        self.velocit= 0.1
+        self.up_velocit = 10
+        self.velocit= -1
         self.fall_time=0
         self.gravity_ac=0.01
         self.frame = 0
@@ -73,7 +75,7 @@ class Bird:
     def reset(self):
         self.up_time = 0
         self.up = False
-        self.velocit= 0.1
+        self.velocit= -1
         self.fall_time=0
         self.position = self.position_base.copy()
         self.pipes_done = 0
@@ -92,22 +94,21 @@ class Bird:
         # rect(self.screen, self.color, (self.position[0],self.position[1],self.section_size,self.section_size))
     
     def update_position(self):
-    #     if self.up and self.position[1]>0:
-    #         self.position[1]-=2
-    #         self.up_time +=1
-    #         if self.up_time>50:
-    #             self.up_time = 0
-    #             self.up = False
-        if self.position[1]<self.screen_size[1]:
+        # if self.position[1]<self.screen_size[1]:
             
-            self.fall_time+=1
-            self.position[1] = self.position[1] +self.velocit*self.fall_time+(self.gravity_ac*self.fall_time**2)/2
-            if self.velocit< 0.03:
-                self.velocit = self.gravity_ac*self.fall_time+self.up_velocit
+        #     self.fall_time+=1
+        #     self.position[1] = self.position[1] +self.velocit*self.fall_time+(self.gravity_ac*self.fall_time**2)/2
+        #     if self.velocit< 0.03:
+        #         self.velocit = self.gravity_ac*self.fall_time+self.up_velocit
             
-        if self.position[1]>=self.screen_size[1]-self.section_size_h:
-            self.position[1] = self.screen_size[1]-self.section_size_h
-            self.velocit = 0
+        # if self.position[1]>=self.screen_size[1]-self.section_size_h:
+        #     self.position[1] = self.screen_size[1]-self.section_size_h
+        #     self.velocit = 0
+
+        self.position[1] -= self.velocit
+        if self.velocit>=-self.up_velocit:
+            self.velocit-= 1
+
 
 
 class flap_bird:
@@ -152,8 +153,9 @@ class flap_bird:
                 return True
         return False
     def get_points(self):
-        if self.bird.position[0]==self.pipe.position[0]+self.pipe.section_size:
+        if self.bird.position[0]>=self.pipe.position[0]+self.pipe.section_size and not self.pipe.get:
             self.bird.pipes_done += 1
+            self.pipe.get = True
             return True
         return False
 
@@ -177,8 +179,8 @@ class flap_bird:
                 self.reset()
             
     def draw_background(self):
-        self.scroll_base+=1
-        self.scroll_bg+=0.2
+        self.scroll_base+=5
+        self.scroll_bg+=1
         if self.scroll_base>self.b_image.get_width():
             self.scroll_base=0
         
@@ -247,4 +249,4 @@ if __name__ == '__main__':
         game.game_step()
         game.game_draw_player()
 
-        time.sleep(0.004)
+        time.sleep(0.01)

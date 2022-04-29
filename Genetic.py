@@ -96,9 +96,10 @@ def train():
     plot_mean_scores = []
     total_score = 0
     game = flap_bird()
-    genetic = Genetic(game.screen,100)
+    genetic = Genetic(game.screen,500)
 
     genetic.generate_population()
+    train_games = 0
     while True:
         state = game.inputs_AI()
         game.game_draw_genetic()
@@ -106,6 +107,7 @@ def train():
         # print(len(genetic.population))
         best_score =0
         best_individual=None
+        
         for individual in  genetic.population:
             if individual.is_alive:
                 lives+=1
@@ -128,7 +130,13 @@ def train():
                 best_individual.bird.update_alpha(255)
         game.pipe.update_position()
         game.game_update_screen()
-        if lives == 0:
+        if lives == 0 and train_games < 2:
+            train_games+=1
+            for individual in  genetic.population:
+                individual.is_alive=True
+            game.reset()
+        if lives == 0 and train_games == 3:
+            train_games = 0
             genetic.n_games+=1
             game.reset()
             genetic.evaluate_population()
