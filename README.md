@@ -7,3 +7,5 @@
 ## Q deep Learn
 
 ## Genetic Algorithm
+
+<img src="images/flappy_bird-traint.gif"/>
